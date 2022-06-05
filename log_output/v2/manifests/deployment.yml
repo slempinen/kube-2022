@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-output-deployment
+spec:
+  selector:
+    matchLabels:
+      app: log-output
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: log-output
+    spec:
+      containers:
+      - name: log-output-container
+        image: santlemp/log_output:1

@@ -1,0 +1,19 @@
+{
+  "name": "log_output",
+  "version": "2.0.0",
+  "description": "Log Output exercises for devops with kubernetes",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/slempinen/kube-2022.git"
+  },
+  "author": "Santtu Lempinen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/slempinen/kube-2022/issues"
+  },
+  "homepage": "https://github.com/slempinen/kube-2022#readme"
+}
