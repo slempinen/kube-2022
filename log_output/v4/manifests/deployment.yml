@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-output-deployment
+spec:
+  selector:
+    matchLabels:
+      app: log-output
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: log-output
+    spec:
+      containers:
+      - name: log-output-container
+        image: santlemp/log_output:3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ping-pong-deployment
+spec:
+  selector:
+    matchLabels:
+      app: ping-pong
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ping-pong
+    spec:
+      containers:
+      - name: ping-pong-container
+        image: santlemp/ping_pong:1
