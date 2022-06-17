@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-output-deployment
+spec:
+  selector:
+    matchLabels:
+      app: log-output
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: log-output
+    spec:
+      volumes:
+        - name: shared-image
+          emptyDir:
+            medium: ""
+      containers:
+        - name: log-output-reader-container
+          image: santlemp/log_output:reader-1
+          env:
+            - name: TIMESTAMP_FILEPATH
+              value: /shared-data/timestamp.txt
+          volumeMounts:
+            - mountPath: /shared-data
+              name: shared-image
+
+        - name: log-output-writer-container
+          image: santlemp/log_output:writer-1
+          env:
+            - name: TIMESTAMP_FILEPATH
+              value: /shared-data/timestamp.txt
+          volumeMounts:
+            - mountPath: /shared-data
+              name: shared-image
