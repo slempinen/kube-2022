@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-output-deployment
+spec:
+  selector:
+    matchLabels:
+      app: log-output
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: log-output
+    spec:
+      volumes:
+        - name: shared-volume
+          persistentVolumeClaim:
+            claimName: log-output-claim
+      containers:
+      - name: log-output-container
+        image: santlemp/log_output:1.11
+        env:
+          - name: PINGS_FILEPATH
+            value: /shared-data/pings.txt
+        volumeMounts:
+          - mountPath: /shared-data
+            name: shared-volume
+      - name: ping-pong-container
+        image: santlemp/ping_pong:2
+        env:
+          - name: PINGS_FILEPATH
+            value: /shared-data/pings.txt
+          - name: PORT
+            value: "3001"
+        volumeMounts:
+          - mountPath: /shared-data
+            name: shared-volume
