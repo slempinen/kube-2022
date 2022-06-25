@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-stateful-set
+  namespace: project-namespace
+spec:
+  serviceName: postgres-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+      namespace: project-namespace
+    spec:
+      containers:
+        - name: postgres-container
+          image: postgres:14
+          ports:
+            - name: pg
+              containerPort: 5432
+          env:
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secret
+                key: password
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data 
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        namespace: project-namespace
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 100Mi
