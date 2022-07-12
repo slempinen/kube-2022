@@ -33,34 +33,33 @@ jobs:
           project_id: ${{ secrets.GKE_PROJECT }}
           service_account_key: ${{ secrets.GKE_SA_KEY }}
           export_default_credentials: true
-          
-      # Configure Docker to use the gcloud command-line tool as a credential
-      # helper for authentication
+
       - run: |-
           gcloud --quiet auth configure-docker
-      # Get the GKE credentials so we can deploy to the cluster
+
       - run: |-
           gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
-      # Build the Docker image
+
       - name: Build frontend
         run: |-
           docker build \
             --tag "gcr.io/$PROJECT_ID/$FRONTEND_IMAGE:${GITHUB_REF#refs/heads/}-$GITHUB_SHA" \
             ./project
+
       - name: Build backend
         run: |-
           docker build \
             --tag "gcr.io/$PROJECT_ID/$BACKEND_IMAGE:${GITHUB_REF#refs/heads/}-$GITHUB_SHA" \
             ./backend
-      # Push the Docker image to Google Container Registry
+
       - name: Publish frontend
         run: |-
           docker push "gcr.io/$PROJECT_ID/$FRONTEND_IMAGE:${GITHUB_REF#refs/heads/}-$GITHUB_SHA"
+
       - name: Publish backend
         run: |-
           docker push "gcr.io/$PROJECT_ID/$BACKEND_IMAGE:${GITHUB_REF#refs/heads/}-$GITHUB_SHA"
 
-      # Set up kustomize
       - name: Set up Kustomize
         uses: imranismail/setup-kustomize@v1
       
@@ -68,13 +67,16 @@ jobs:
         run: |-
           sops --decrypt ./manifests/secret.enc.yml > ./manifests/secret.yml
 
-      # Deploy the Docker image to the GKE cluster
       - name: Deploy
         run: |-
-          kubectl config set-context --current --namespace=project-namespace
+          kubectl create namespace ${GITHUB_REF#refs/heads/} || true
+          kubectl config set-context --current --namespace=${GITHUB_REF#refs/heads/}
+          kustomize edit set namespace ${GITHUB_REF#refs/heads/}
           kustomize edit set image $FRONTEND_IMAGE=gcr.io/$PROJECT_ID/$FRONTEND_IMAGE:${GITHUB_REF#refs/heads/}-$GITHUB_SHA
           kustomize edit set image $BACKEND_IMAGE=gcr.io/$PROJECT_ID/$BACKEND_IMAGE:${GITHUB_REF#refs/heads/}-$GITHUB_SHA
+          kustomize edit add configmap project-config --from-literal=pg_host=postgres-service.${GITHUB_REF#refs/heads/}
           kustomize build .
+          kubectl delete deployment --all || true
           kustomize build . | kubectl apply -f -
           kubectl rollout status deployment project-deployment
           kubectl rollout status deployment todos-deployment

@@ -1,0 +1,38 @@
+name: Delete environment
+
+on:
+  delete:
+
+env:
+  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+  GKE_CLUSTER: dwk-cluster
+  GKE_ZONE: europe-north1-a
+  FRONTEND_IMAGE: frontend
+  BACKEND_IMAGE: backend
+
+jobs:
+  build-publish-deploy:
+    name: Delete environment
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./project/v1.4
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@main
+        with:
+          project_id: ${{ secrets.GKE_PROJECT }}
+          service_account_key: ${{ secrets.GKE_SA_KEY }}
+          export_default_credentials: true
+          
+      - run: |-
+          gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
+
+      - name: Deploy
+        run: |-
+          kubectl delete all --all -n ${GITHUB_REF#refs/heads/}
+

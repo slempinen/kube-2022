@@ -4,7 +4,6 @@ resources:
   - manifests/deployment.yaml
   - manifests/ingress.yml
   - manifests/service.yml
-  - manifests/configMap.yml
   - manifests/persistentVolumeClaim.yml
   - manifests/secret.yml
   - manifests/statefulSet.yml
