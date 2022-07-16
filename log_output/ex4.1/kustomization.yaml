@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - manifests/configMap.yml
+  - manifests/deployment.yml
+  - manifests/ingress.yml
+  - manifests/secret.yml
+  - manifests/service.yml
+  - manifests/statefulSet.yml
+images:
+  - name: log-output-image
+    newName: santlemp/log_output:4.1
+  - name: ping-pong-image
+    newName: santlemp/ping_pong:4.1
+namespace: log-output-namespace-v2
+   
+   
