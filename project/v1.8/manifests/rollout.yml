@@ -1,0 +1,101 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: project-deployment
+  namespace: project-namespace
+spec:
+  selector:
+    matchLabels:
+      app: project
+  replicas: 4
+  strategy:
+    canary:
+      steps:
+      - setWeight: 25
+      - pause:
+          duration: 30s
+      - setWeight: 50
+      - pause:
+          duration: 30s
+      - analysis:
+          templates:
+          - templateName: cpu-usage
+  template:
+    metadata:
+      labels:
+        app: project
+    spec:
+      volumes:
+        - name: project-data
+          persistentVolumeClaim:
+            claimName: project-pvc
+      containers:
+      - name: project-container
+        image: frontend
+        env:
+          - name: IMAGE_PATH
+            value: /project-data/image.jpg
+        volumeMounts:
+          - mountPath: /project-data
+            name: project-data
+        resources:
+          limits:
+            cpu: "150m"
+            memory: "200Mi"
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: todos-deployment
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: todos
+  strategy:
+    canary:
+      steps:
+      - setWeight: 25
+      - pause:
+          duration: 30s
+      - setWeight: 50
+      - pause:
+          duration: 30s
+      - analysis:
+          templates:
+          - templateName: cpu-usage
+  template:
+    metadata:
+      labels:
+        app: todos
+    spec:
+      containers:
+      - name: todos-container
+        image: backend
+        env:
+          - name: POSTGRES_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: project-config
+                key: pg_host
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secret
+                key: password
+        resources:
+          limits:
+            cpu: "150m"
+            memory: "100Mi"
+        readinessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          httpGet:
+             path: /health
+             port: 4000
+        livenessProbe:
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          httpGet:
+             path: /health
+             port: 4000
