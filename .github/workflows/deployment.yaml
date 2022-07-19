@@ -1,0 +1,60 @@
+name: Release flux project
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'project/v2.1/**'
+      - '.github/workflows/deployment.yaml'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and Push Frontend
+      uses: docker/build-push-action@v2
+      with:
+        context: project/v2.1/project
+        push: true
+        tags: santlemp/project:frontend-${{ github.sha }}
+
+    - name: Build and Push Backend
+      uses: docker/build-push-action@v2
+      with:
+        context: project/v2.1/backend
+        push: true
+        tags: santlemp/project:backend-${{ github.sha }}
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Kustomize
+      uses: imranismail/setup-kustomize@v1
+
+    - name: Update yamls
+      working-directory: project/v2.1
+      run: |-
+        kustomize edit set image frontend=santlemp/project:frontend-${{ github.sha }}
+        kustomize edit set image backend=santlemp/project:backend-${{ github.sha }}
+
+    - uses: EndBug/add-and-commit@v7
+      with:
+        add: 'project/v2.1/kustomization.yaml'
+        message: New version release for project ${{ github.sha }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

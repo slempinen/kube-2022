@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: project-service
+  namespace: project-namespace
+spec:
+  type: ClusterIP
+  selector:
+    app: project
+  ports:
+    - port: 80
+      targetPort: 3000
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: todos-service
+  namespace: project-namespace
+spec:
+  type: ClusterIP
+  selector:
+    app: todos
+  ports:
+    - port: 80
+      targetPort: 4000
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: project-namespace
+  labels:
+    app: postgres-svc
+spec:
+  ports:
+  - port: 5432
+    name: pg
+  clusterIP: None
+  selector:
+    app: postgres

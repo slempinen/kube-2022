@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: todo-cron
+  namespace: project-namespace
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: todo-cron-container
+            image: santlemp/project:cron-1.3
+            env:
+              - name: POSTGRES_HOST
+                valueFrom:
+                  configMapKeyRef:
+                    name: project-config
+                    key: pg_host
+              - name: POSTGRES_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-secret
+                    key: password
+          restartPolicy: OnFailure
+
