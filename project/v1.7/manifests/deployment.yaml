@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: project-deployment
+  namespace: project-namespace
+spec:
+  selector:
+    matchLabels:
+      app: project
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: project
+    spec:
+      volumes:
+        - name: project-data
+          persistentVolumeClaim:
+            claimName: project-pvc
+      containers:
+      - name: project-container
+        image: frontend
+        env:
+          - name: IMAGE_PATH
+            value: /project-data/image.jpg
+        volumeMounts:
+          - mountPath: /project-data
+            name: project-data
+        resources:
+          limits:
+            cpu: "150m"
+            memory: "200Mi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todos-deployment
+  namespace: project-namespace
+spec:
+  selector:
+    matchLabels:
+      app: todos
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: todos
+    spec:
+      containers:
+      - name: todos-container
+        image: backend
+        env:
+          - name: POSTGRES_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: project-config
+                key: pg_host
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secret
+                key: password
+        resources:
+          limits:
+            cpu: "150m"
+            memory: "100Mi"
+        readinessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          httpGet:
+             path: /health
+             port: 4000
+        livenessProbe:
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          httpGet:
+             path: /health
+             port: 4000
+
+
