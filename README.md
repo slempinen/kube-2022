@@ -45,4 +45,6 @@ I also have familiarity with psql from work and earlier school projects.
 
 ![Todo logs](logs.png)
 
+### Exercise 4.3
 
+![Prometheus query](prometheus.png)
