@@ -1,0 +1,66 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: log-output-serverless
+spec:
+  template:
+    metadata:
+      name: log-output-serverless-v3
+    spec:
+      containers:
+        - name: log-output-container
+          image: log-output-image
+          env:
+            - name: PING_APP_URL
+              value: http://ping-pong-serverless.default.svc.cluster.local
+            - name: MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: log-output-config
+                  key: message
+            - name: APP_PORT
+              value: "8080"
+          resources:
+            limits:
+              cpu: "150m"
+              memory: "100Mi"
+          readinessProbe:
+              initialDelaySeconds: 10
+              periodSeconds: 5
+              httpGet:
+                 path: /health
+--- 
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: ping-pong-serverless
+spec:
+  template:
+    metadata:
+      name: ping-pong-serverless-v1
+    spec:
+      containers:
+        - name: ping-pong-container
+          image: ping-pong-image
+          env:
+            - name: POSTGRES_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: log-output-config
+                  key: pg_host
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
+            - name: APP_PORT
+              value: "8080"
+          resources:
+            limits:
+              cpu: "150m"
+              memory: "100Mi"
+          readinessProbe:
+              initialDelaySeconds: 10
+              periodSeconds: 5
+              httpGet:
+                 path: /health
