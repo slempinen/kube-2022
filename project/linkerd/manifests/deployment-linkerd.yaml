@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: project-deployment
+  namespace: project-namespace
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: project
+  template:
+    metadata:
+      annotations:
+        linkerd.io/inject: enabled
+      labels:
+        app: project
+    spec:
+      containers:
+      - env:
+        - name: IMAGE_PATH
+          value: /project-data/image.jpg
+        image: frontend
+        name: project-container
+        resources:
+          limits:
+            cpu: 150m
+            memory: 200Mi
+        volumeMounts:
+        - mountPath: /project-data
+          name: project-data
+      volumes:
+      - name: project-data
+        persistentVolumeClaim:
+          claimName: project-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todos-deployment
+  namespace: project-namespace
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: todos
+  template:
+    metadata:
+      annotations:
+        linkerd.io/inject: enabled
+      labels:
+        app: todos
+    spec:
+      containers:
+      - env:
+        - name: POSTGRES_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: pg_host
+              name: project-config
+        - name: NATS_URL
+          valueFrom:
+            configMapKeyRef:
+              key: nats_url
+              name: project-config
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: postgres-secret
+        image: backend
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 4000
+          initialDelaySeconds: 20
+          periodSeconds: 5
+        name: todos-container
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 4000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          limits:
+            cpu: 150m
+            memory: 100Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broadcaster-deployment
+  namespace: project-namespace
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: broadcaster
+  template:
+    metadata:
+      annotations:
+        linkerd.io/inject: enabled
+      labels:
+        app: broadcaster
+    spec:
+      containers:
+      - env:
+        - name: NATS_URL
+          valueFrom:
+            configMapKeyRef:
+              key: nats_url
+              name: project-config
+        image: broadcaster
+        name: broadcaster-container
+---

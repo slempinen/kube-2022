@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - manifests/deployment-linkerd.yaml
+  - manifests/ingress.yml
+  - manifests/service.yml
+  - manifests/secret.yml
+  - manifests/statefulSet.yml
+  - manifests/configMap.yml
+  - manifests/persistentVolumeClaim.yaml
+  - manifests/analysisTemplate.yml
+images:
+  - name: frontend
+    newName: santlemp/project:frontend-1.9
+  - name: backend
+    newName: santlemp/project:backend-2.0
+  - name: broadcaster
+    newName: santlemp/project:broadcaster
+namespace: project-namespace
+   

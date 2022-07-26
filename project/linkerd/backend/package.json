@@ -1,0 +1,27 @@
+{
+  "name": "project",
+  "version": "0.0.1",
+  "description": "The project on devops with kubernets course",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/slempinen/kube-2022.git"
+  },
+  "author": "Santtu Lempinen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/slempinen/kube-2022/issues"
+  },
+  "homepage": "https://github.com/slempinen/kube-2022#readme",
+  "dependencies": {
+    "body-parser": "^1.20.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.1",
+    "nats": "^2.7.1",
+    "node-fetch": "^2.6.7",
+    "pg": "^8.7.3"
+  }
+}
