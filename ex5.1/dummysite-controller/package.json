@@ -1,0 +1,16 @@
+{
+  "name": "dummysite-controller",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Santtu Lempinen",
+  "license": "ISC",
+  "dependencies": {
+    "@dot-i/k8s-operator": "^1.3.2",
+    "@kubernetes/client-node": "^0.17.0"
+  },
+  "type": "module"
+}
