@@ -41,7 +41,7 @@ I also have no personal interest in using proprietary software like google cloud
 
 I also have familiarity with psql from work and earlier school projects.
 
-### Exercise 3.8
+### Exercise 3.10
 
 ![Todo logs](logs.png)
 
